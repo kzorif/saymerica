@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <pattern id="stripes" width="2" height="48" patternUnits="userSpaceOnUse">
+      <rect width="1200" height="24" fill="#b22234" opacity="0.06"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#f3eee1"/>
+  <rect width="1200" height="630" fill="url(#stripes)"/>
+  <rect x="30" y="30" width="1140" height="570" fill="none" stroke="#2b2f63" stroke-width="3"/>
+
+  <text x="600" y="138" text-anchor="middle" fill="#b22234" font-size="34" letter-spacing="20"
+        font-family="Georgia, 'Times New Roman', serif">★ ★ ★</text>
+
+  <text x="600" y="278" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif"
+        font-size="116" font-weight="bold" fill="#16263f">Talk like an</text>
+  <text x="600" y="406" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif"
+        font-size="116" font-weight="bold" font-style="italic" fill="#b22234">American</text>
+
+  <rect x="556" y="446" width="88" height="12" fill="url(#stripes)"/>
+
+  <text x="600" y="512" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif"
+        font-size="32" font-style="italic" fill="#586577">water → wader · going to → gonna · what are you → whatcha</text>
+
+  <text x="600" y="566" text-anchor="middle" font-family="Helvetica, Arial, sans-serif"
+        font-size="22" letter-spacing="5" font-weight="bold" fill="#2b2f63">SAYMERICA · AMERICAN ACCENT TRANSLATOR</text>
+</svg>

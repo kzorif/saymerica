@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kzorif.github.io/saymerica/sitemap.xml
