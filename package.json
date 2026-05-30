@@ -4,6 +4,7 @@
   "description": "Convert any English text to relaxed American-accent spelling. Single-file, offline, no login.",
   "private": true,
   "scripts": {
-    "test": "node tests/engine.test.mjs"
+    "test": "node tests/engine.test.mjs",
+    "build:pages": "node scripts/build-pages.mjs"
   }
 }

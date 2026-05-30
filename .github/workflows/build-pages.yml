@@ -1,0 +1,37 @@
+name: Build programmatic pages
+
+# Optional: regenerates /how-americans-say/* and sitemap.xml whenever the engine
+# or the generator changes, then commits the result. The paths filter excludes
+# the generated output, so the bot's own commit does NOT retrigger this workflow.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "scripts/build-pages.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: node scripts/build-pages.mjs
+      - name: Commit regenerated pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add how-americans-say sitemap.xml
+          if git diff --cached --quiet; then
+            echo "No page changes."
+          else
+            git commit -m "Rebuild programmatic pages [skip ci]"
+            git push
+          fi

@@ -77,6 +77,31 @@ const COMMON_BASE = {
 
 Then add a matching line to the test suite (below) so it stays fixed.
 
+## Programmatic SEO pages
+
+`scripts/build-pages.mjs` generates a static long-tail page for every word in its
+list at `/how-americans-say/<word>/` — each with the word, its American spelling,
+an explanation of the exact rule that fired, a "Hear it" button, cross-links to
+sibling words sharing that rule, and full meta/OG/JSON-LD tags. It also builds a
+hub page at `/how-americans-say/` and regenerates `sitemap.xml` to include
+everything.
+
+```bash
+npm run build:pages
+```
+
+The generator **extracts the engine from `index.html`** (same as the tests), so
+generated content never drifts from the app. Pages are fully pre-rendered HTML
+(best for crawling) and self-contained (inline CSS + TTS, no external requests).
+
+To add words, edit the `WORDS` array in the script and re-run — candidates that
+don't actually change are skipped automatically. The optional GitHub Action
+(`.github/workflows/build-pages.yml`) regenerates and commits the pages whenever
+the engine or generator changes.
+
+> If you move to a custom domain, update the `SITE` constant at the top of the
+> generator (it's used for canonical/OG/sitemap absolute URLs).
+
 ## Tests
 
 ```bash
