@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>sayMerica — talk like an American</title>
+<style>
+  :root {
+    --paper: #f3eee1;
+    --paper-2: #fcf9f2;
+    --ink: #16263f;
+    --muted: #586577;
+    --faint: #9a8d73;
+    --line: rgba(22,38,63,0.10);
+    --line-strong: rgba(22,38,63,0.22);
+    --red: #b22234;   /* Old Glory Red */
+    --navy: #2b2f63;  /* Old Glory Blue */
+    --gold: #b58a36;
+    --r: 6px;
+    --shadow: 0 24px 60px -34px rgba(22,38,63,0.45);
+    --serif: "Hoefler Text", "Didot", "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+    --sans: ui-sans-serif, -apple-system, "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background:
+      radial-gradient(1100px 540px at 50% -160px, rgba(43,47,99,0.07), transparent 70%),
+      radial-gradient(700px 380px at 88% 4%, rgba(178,34,52,0.05), transparent 70%),
+      repeating-linear-gradient(180deg, rgba(178,34,52,0.045) 0 18px, transparent 18px 36px),
+      var(--paper);
+    background-attachment: fixed;
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 48px 22px 90px; }
+
+  /* ---- masthead ---- */
+  header { text-align: center; margin-bottom: 40px; }
+  .wordmark { font-size: 12px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--navy); }
+  .stars { color: var(--red); letter-spacing: 8px; font-size: 13px; margin: 16px 0 12px 4px; }
+  h1 {
+    font-family: var(--serif); font-size: clamp(52px, 12vw, 96px); margin: 0; line-height: 0.98;
+    font-weight: 600; letter-spacing: -1px; color: var(--ink);
+  }
+  h1 .us { color: var(--red); font-style: italic; }
+  /* little flag-stripe emblem under the headline */
+  .rule { width: 58px; height: 11px; margin: 26px auto 0;
+    background: repeating-linear-gradient(180deg, var(--red) 0 2px, transparent 2px 4.5px); }
+  .sub { font-family: var(--serif); color: var(--muted); margin: 22px auto 0; font-size: 18px;
+    max-width: 30em; font-style: italic; line-height: 1.5; }
+
+  /* ---- main card ---- */
+  .card {
+    background: var(--paper-2); border: 1px solid var(--line-strong); border-radius: var(--r);
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .field { padding: 22px 24px; }
+  .field .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .field .head .name { font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--navy); }
+  .count { font-size: 12px; color: var(--faint); }
+
+  textarea {
+    width: 100%; min-height: 120px; resize: vertical; background: transparent; color: var(--ink);
+    border: 0; padding: 0; font-size: 17px; font-family: var(--serif); line-height: 1.6; outline: none;
+  }
+  textarea::placeholder { color: var(--faint); font-style: italic; }
+
+  .divider { position: relative; height: 1px; background: var(--line-strong); margin: 0 24px; }
+  .divider .arrow {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+    width: 30px; height: 30px; border-radius: 50%; background: var(--navy); border: 0;
+    display: grid; place-items: center; color: #fff; font-size: 14px;
+  }
+
+  .out { min-height: 56px; }
+  .out.placeholder { color: var(--faint); font-size: 17px; font-style: italic; font-family: var(--serif); padding: 6px 0; }
+  /* interleaved EN-above-US reference pairs */
+  .pair { padding: 16px 0; border-bottom: 1px solid var(--line); }
+  .pair:first-child { padding-top: 2px; }
+  .pair:last-child { border-bottom: 0; padding-bottom: 2px; }
+  .orig, .conv { display: flex; gap: 11px; align-items: baseline; }
+  .orig { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+  .conv { font-family: var(--serif); font-size: 21px; line-height: 1.5; color: var(--ink); }
+  .tag { font-size: 9.5px; font-weight: 800; letter-spacing: 1px; padding: 2px 6px; border-radius: 3px;
+    flex: none; position: relative; top: 2px; }
+  .tag.en { color: var(--navy); border: 1px solid var(--line-strong); }
+  .tag.us { color: #fff; background: var(--red); }
+  .txt { flex: 1; }
+  .pair .wk { color: var(--gold); font-weight: 700; }
+  .pair .stop { color: var(--red); font-weight: 700; }
+
+  /* ---- controls bar ---- */
+  .bar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 18px;
+    background: var(--paper-2); border: 1px solid var(--line-strong); border-radius: var(--r); padding: 12px 14px;
+  }
+  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 4px; overflow: hidden; }
+  .seg button {
+    border: 0; background: transparent; color: var(--muted); padding: 8px 18px;
+    font-size: 13px; font-weight: 700; letter-spacing: .3px; cursor: pointer; transition: .15s;
+  }
+  .seg button + button { border-left: 1px solid var(--line-strong); }
+  .seg button.active { background: var(--navy); color: #fff; }
+  .hint { font-size: 13px; color: var(--muted); font-style: italic; font-family: var(--serif); flex: 1 1 100%; margin: -2px 2px 0; }
+  .chk { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; color: var(--muted); cursor: pointer; user-select: none; }
+  .chk input { width: 15px; height: 15px; accent-color: var(--navy); }
+  .chk code { background: rgba(22,38,63,0.06); padding: 1px 6px; border-radius: 4px; font-size: 12px; color: var(--red); }
+  .spacer { flex: 1; }
+
+  /* ---- action buttons ---- */
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .btn {
+    border: 1px solid var(--line-strong); background: var(--paper-2); color: var(--ink);
+    padding: 11px 20px; border-radius: 4px; font-size: 12.5px; font-weight: 700; letter-spacing: .5px;
+    text-transform: uppercase; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: .12s;
+  }
+  .btn:hover { border-color: var(--navy); }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary { background: var(--navy); border-color: var(--navy); color: #fff; }
+  .btn.primary:hover { filter: brightness(1.14); }
+  .btn.go { background: var(--red); border-color: var(--red); color: #fff; }
+  .btn.go:hover { filter: brightness(1.08); }
+  .btn.ghost { color: var(--muted); background: transparent; }
+
+  /* ---- voice row ---- */
+  .voice { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px;
+    padding: 12px 14px; background: var(--paper-2); border: 1px solid var(--line-strong); border-radius: var(--r); }
+  .voice .lbl { font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--navy); }
+  select {
+    background: #fff; color: var(--ink); border: 1px solid var(--line-strong);
+    border-radius: 4px; padding: 9px 12px; font-size: 13.5px; font-family: var(--sans); max-width: 320px; flex: 1; min-width: 180px;
+  }
+  .rate { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+  input[type=range] { accent-color: var(--red); width: 110px; }
+
+  /* ---- samples ---- */
+  .samples-label { margin-top: 28px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px;
+    text-transform: uppercase; color: var(--navy); }
+  .examples { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip {
+    border: 1px solid var(--line-strong); background: var(--paper-2); color: var(--muted);
+    padding: 7px 14px; border-radius: 3px; font-size: 13px; font-weight: 600; cursor: pointer; transition: .15s;
+  }
+  .chip:hover { color: var(--ink); border-color: var(--red); background: #fff; }
+
+  footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top: 46px; line-height: 1.7;
+    font-family: var(--serif); font-style: italic; }
+  footer .ftstars { color: var(--red); letter-spacing: 6px; font-style: normal; display: block; margin-bottom: 12px; }
+
+  .toast {
+    position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; font-weight: 700; padding: 11px 22px; border-radius: 4px;
+    opacity: 0; pointer-events: none; transition: .22s; font-size: 13px; letter-spacing: .5px; box-shadow: 0 12px 30px -10px rgba(22,38,63,.5);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="wordmark">sayMerica</div>
+    <div class="stars">★ ★ ★</div>
+    <h1>Talk like an <span class="us">American</span></h1>
+    <div class="rule"></div>
+    <p class="sub">Paste any English, and read it back the way it actually sounds — relaxed, reduced, unmistakably American.</p>
+  </header>
+
+  <!-- MAIN CARD -->
+  <div class="card">
+    <div class="field">
+      <div class="head"><span class="name">Your text</span><span class="count" id="count">0 chars</span></div>
+      <textarea id="input" placeholder="e.g.  What are you going to do? I want you to wait for me — it is easy."></textarea>
+    </div>
+    <div class="divider"><div class="arrow">↓</div></div>
+    <div class="field">
+      <div class="head"><span class="name">American sound</span></div>
+      <div class="out placeholder" id="output" aria-live="polite">…your American sound shows up here.</div>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="bar">
+    <div class="seg" id="intensity" role="tablist">
+      <button data-level="subtle">Subtle</button>
+      <button data-level="full" class="active">Full</button>
+    </div>
+    <div class="spacer"></div>
+    <label class="chk"><input type="checkbox" id="weak" /> Weak endings <code>clu[b]</code></label>
+    <label class="chk"><input type="checkbox" id="stops" checked /> Stop&nbsp;T's</label>
+    <p class="hint" id="hint"></p>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions">
+    <button class="btn primary" id="copy">Copy</button>
+    <button class="btn go" id="speak">🔊 Hear it</button>
+    <button class="btn ghost" id="stopSpeak">Stop</button>
+    <button class="btn ghost" id="clear">Clear</button>
+  </div>
+
+  <!-- VOICE -->
+  <div class="voice">
+    <span class="lbl">Voice</span>
+    <select id="voice" aria-label="Voice"></select>
+    <span class="rate">Speed <input type="range" id="rate" min="0.6" max="1.2" step="0.05" value="0.95" /></span>
+  </div>
+
+  <!-- SAMPLES -->
+  <div class="samples-label">Load a passage and start reading</div>
+  <div class="examples" id="examples"></div>
+
+  <footer>
+    <span class="ftstars">★ ★ ★</span>
+    sayMerica is an eye-dialect toy — it spells words the way relaxed American speech sounds.<br>
+    Runs 100% in your browser. No login, nothing saved.
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================================
+   sayMerica conversion engine
+   normalize → multi-word phrases → single words → productive phonetic rules
+   → decoration (weak endings / stops) → re-capitalize sentences.
+   Dictionaries reproduce the spec exactly; regex rules generalize to unlisted
+   words so ANY input produces a sensible American spelling.
+   ========================================================================== */
+
+function normApos(s){ return s.replace(/[‘’ʼ]/g, "'").replace(/[“”]/g, '"'); }
+
+const PHRASES = {
+  "what i told you": "wha dai tol ju",
+  "i should have known": "shoulda known",
+  "should not have": "shouldnuv",
+  "could not have": "couldnuv",
+  "would not have": "wouldnuv",
+  "did not even": "didi-niven",
+  "don't even": "doniven",
+  "can't even": "kaniven",
+  "won't even": "woniven",
+  "one of the": "wanuh the",
+  "some of my": "somuh my",
+  "cup of coffee": "cuppuh coffee",
+  "take it easy": "tei-ki-dizzy",
+  "middle of": "middle uh",
+  "kind of": "kina",
+  "going to": "gonna",
+  "want to": "wanna",
+  "got to": "gotta",
+  "for instance": "frin stance",
+  "for example": "freg zample",
+  "trying to": "chryana",
+  "want you": "wanchoo",
+  "need you": "neeju",
+  "hold on": "holdon",
+  "see you": "see ya",
+  "catch you later": "catch ya ladder",
+  "catch you": "catch ya",
+  "i'm out of here": "i'm oudda here",
+  "let it": "ledid",
+  "him try": "im chry",
+  "'cause i": "kuzy",
+  "cause i": "kuzy",
+  "and you've": "anyoov",
+  "but i am": "bu-dime",
+  "that i am": "tha-dime",
+  "what i am": "wha-dime",
+  "would he": "woody",
+  "could he": "coody",
+  "should he": "shoody",
+  "like a": "lika",
+  "it is cool": "school",
+  "it is no good": "snow good",
+  "it is easy": "sizzy",
+  "it is good": "sgood",
+  "does he": "duzzy",
+  "has he": "hazzy",
+  "did he": "didee",
+  "what i": "wha dai",
+  "what's up": "sup",
+  "whats up": "sup",
+  "how is it going": "howzit goin",
+  "how's it going": "howzit goin",
+  "hows it going": "howzit goin",
+  "what is going on": "what's goinon",
+  "what is happening": "what's happenin",
+  "how have you been": "how you been",
+  "invite her": "invit-er",
+  "flip them": "flip-em",
+  "found them": "found-em",
+  "should have": "shoulda",
+  "would have": "woulda",
+  "could have": "coulda",
+  "should've": "shoulda",
+  "would've": "woulda",
+  "could've": "coulda",
+  "does not": "dozen",
+  "am not": "ain",
+  "are not": "ain",
+  "what is": "what's",
+  "how is": "how's"
+};
+
+const BASE_WORDS = {
+  "of": "uv",
+  "variety": "variedy",
+  "industries": "induschries",
+  "dramatic": "jramadic",
+  "definitely": "defin-ly",
+  "alright": "uh righ",
+  "touched": "touch",
+  "control": "conchrol",
+  "infinity": "infinidy",
+  "wanted": "wan-ed",
+  "wanting": "wan-in",
+  "remember": "member",
+  "little": "liddle",
+  "better": "bedder",
+  "city": "cidy",
+  "written": "wri-nn",
+  "mountain": "moun-nn",
+  "certain": "cer-nn",
+  "captain": "cap-tn",
+  "eaten": "ei-nn",
+  "forgotten": "forgo-unn",
+  "international": "in-ernational",
+  "internet": "in-ernet",
+  "dentist": "denist",
+  "twenty": "tweny",
+  "center": "cener",
+  "disappointing": "disappoining",
+  "quantity": "quanity",
+  "accountable": "accounable",
+  "advantages": "advanages",
+  "plenty": "pleny",
+  "sentences": "senences",
+  "driver": "jriver",
+  "dream": "jream",
+  "address": "ajress",
+  "it's": "iss",
+  "its": "iss"
+};
+
+const FULL_WORDS = {
+  "of": "uv",
+  "for": "fur",
+  "don't": "don",
+  "can't": "kn",
+  "cannot": "kn",
+  "i'd": "i",
+  "him": "im",
+  "her": "er",
+  "his": "iz",
+  "them": "em",
+  "have": "ave",
+  "had": "ad",
+  "here": "ere",
+  "it": "ih",
+  "that": "tha",
+  "wait": "weigh",
+  "eight": "eigh",
+  "hole": "ho’",
+  "fate": "fe’",
+  "going": "goin",
+  "doing": "doin"
+};
+
+// Post-pass: applied LAST so the output isn't re-reduced. "four" -> "for" must run
+// after FULL_WORDS turns standalone "for" -> "fur", otherwise four -> for -> fur.
+const POST_WORDS = {
+  "four": "for"
+};
+
+/* ============================================================================
+   LLM-EXPANDED LAYERS (build-time generated, in the user's style — ships offline)
+   Bridges the CMU gaps for the COMMON cases:
+     • BLENDS      — connected-speech / cross-word slurs (gap #1)
+     • SLANG       — casual & contraction reductions (gap #2)
+     • COMMON_BASE — frequent content words, both intensities
+     • COMMON_FULL — frequent function-word reductions, full intensity only
+   Regenerate/extend any time by feeding more words through the same rules.
+   ========================================================================== */
+
+// Connected speech — applied at BOTH intensities (this IS the accent).
+const BLENDS = {
+  "i don't know": "i dunno",
+  "what are you": "whatcha",
+  "what do you": "whaddya",
+  "what did you": "whatcha",
+  "in front of": "infronna",
+  "because of": "cuzza",
+  "a lot of": "uh lodda",
+  "supposed to": "sposta",
+  "what about": "whadabout",
+  "didn't you": "dincha",
+  "don't you": "dontcha",
+  "would you": "wouldja",
+  "could you": "couldja",
+  "should you": "shouldja",
+  "about to": "bouta",
+  "how about": "howbout",
+  "don't know": "dunno",
+  "give him": "give-im",
+  "tell him": "tell-im",
+  "have to": "hafta",
+  "has to": "hasta",
+  "used to": "usta",
+  "ought to": "oughta",
+  "got you": "gotcha",
+  "get you": "getcha",
+  "bet you": "betcha",
+  "did you": "didja",
+  "let me": "lemme",
+  "give me": "gimme",
+  "come on": "c'mon",
+  "get him": "geddim",
+  "shut up": "shuddup",
+  "lot of": "lodda",
+  "out of": "oudda",
+  "got a": "godda",
+  "sort of": "sorta",
+  "got it": "goddit",
+  "get it": "geddit",
+  "a lot": "uh lot",
+  // contraction blends — casualize formal text (run before full-only reductions)
+  "do not": "don't",
+  "did not": "didn't",
+  "is not": "isn't",
+  "was not": "wasn't",
+  "were not": "weren't",
+  "will not": "won't",
+  "can not": "can't",
+  "cannot": "can't",
+  "could not": "couldn't",
+  "would not": "wouldn't",
+  "should not": "shouldn't",
+  "have not": "haven't",
+  "has not": "hasn't",
+  "had not": "hadn't",
+  "i am": "i'm",
+  "you are": "you're",
+  "we are": "we're",
+  "they are": "they're",
+  "it is": "it's",
+  "that is": "that's",
+  "there is": "there's",
+  "here is": "here's",
+  "he is": "he's",
+  "she is": "she's",
+  "who is": "who's",
+  "let us": "let's",
+  "i would": "i'd",
+  "i will": "i'll",
+  "i have": "i've",
+  "we will": "we'll",
+  "you will": "you'll",
+  "they will": "they'll",
+  "thank you": "thanks",
+  "a couple of": "a coupla",
+  "in a": "inna",
+  "on a": "onna"
+};
+
+// Frequent content words — relaxed pronunciation, safe at BOTH intensities.
+const COMMON_BASE = {
+  "probably": "probly",
+  "literally": "lidrally",
+  "actually": "akshully",
+  "actual": "akchual",
+  "basically": "basiclly",
+  "really": "rilly",
+  "family": "famly",
+  "favorite": "favrit",
+  "comfortable": "comfterble",
+  "interesting": "intresting",
+  "different": "diffrent",
+  "difference": "diffrence",
+  "everybody": "evrybody",
+  "everyone": "evryone",
+  "every": "evry",
+  "camera": "camra",
+  "chocolate": "choclate",
+  "vegetable": "vejtable",
+  "temperature": "temprature",
+  "restaurant": "resterant",
+  "important": "impordant",
+  "beautiful": "beaudiful",
+  "automatic": "audomadic",
+  "computer": "compuder",
+  "hospital": "hospidal",
+  "whatever": "whadever",
+  "united": "unided",
+  "water": "wader",
+  "butter": "budder",
+  "matter": "madder",
+  "party": "pardy",
+  "pretty": "priddy",
+  "thirty": "thirdy",
+  "forty": "fordy",
+  "data": "dada",
+  "later": "lader",
+  "total": "todal",
+  "metal": "medal",
+  "settle": "seddle",
+  "bottle": "boddle",
+  "battle": "baddle",
+  // schwa-drops & syllable elisions the rules can't derive from spelling
+  "usually": "uzhally",
+  "easily": "easly",
+  "general": "genral",
+  "generally": "genrally",
+  "several": "sevral",
+  "federal": "fedral",
+  "average": "avrage",
+  "beverage": "bevrage",
+  "corporate": "corprit",
+  "desperate": "desprit",
+  "separate": "seprit",
+  "memory": "memry",
+  "history": "histry",
+  "factory": "factry",
+  "victory": "victry",
+  "government": "guvment",
+  "everywhere": "evrywhere",
+  "library": "libry",
+  "february": "febuary",
+  "wednesday": "wensday",
+  "recognize": "reckanize",
+  "vegetables": "vejtables",
+  "favorites": "favrits",
+  "sandwich": "samwich",
+  "handsome": "hansum",
+  "grandma": "gramma",
+  "grandpa": "granpa",
+  "clothes": "cloze",
+  "asked": "askt",
+  "months": "munts",
+  "ninety": "ninedy",
+  "eighty": "eighdy",
+  "seventy": "sevendy",
+  "interview": "innerview",
+  "introduce": "inchroduce",
+  "photo": "fodo"
+};
+
+// Frequent function-word reductions — FULL intensity only (thick & risky).
+const COMMON_FULL = {
+  "to": "tuh",
+  "the": "thuh",
+  "you": "ya",
+  "your": "yer",
+  "you're": "yer",
+  "and": "an",
+  "with": "wit",
+  "what": "wha",
+  "just": "jus",
+  "get": "geh",
+  "was": "wuz",
+  "is": "iz",
+  "has": "haz",
+  "as": "az",
+  "our": "ar",
+  "want": "wan",
+  "would": "wood",
+  "could": "cood",
+  "should": "shood",
+  "something": "somethin",
+  "nothing": "nothin",
+  "anything": "anythin",
+  "everything": "everythin",
+  "morning": "mornin",
+  "evening": "evenin",
+  "from": "frum",
+  "some": "sum",
+  "been": "bin",
+  "again": "uhgen",
+  "when": "wen",
+  "were": "wer",
+  "where": "wer",
+  "there": "ther",
+  "their": "ther",
+  "they're": "ther"
+};
+
+// Slang & contraction reductions — FULL intensity only.
+const SLANG = {
+  "okay": "kay",
+  "ok": "kay",
+  "because": "cuz",
+  "cause": "cuz",
+  "about": "bout",
+  "around": "round",
+  "fellow": "fella",
+  "you all": "yall",
+  "ain't": "ain",
+  "isn't": "izn",
+  "wasn't": "wuzn",
+  "doesn't": "duzn",
+  "didn't": "didn",
+  "wouldn't": "wooden",
+  "couldn't": "coodn",
+  "shouldn't": "shoodn",
+  "won't": "won",
+  "goodbye": "bye",
+  "awesome": "awsum",
+  "hasn't": "hazn",
+  "haven't": "havn",
+  "hadn't": "hadn",
+  "weren't": "wern"
+};
+
+// Ready-to-read passages. Collectively they exercise every baked word at least
+// once, so a curious user can just load one and start reading.
+const SAMPLES = [
+  { title: "Morning Pep Talk", text:
+"Alright, what are you going to do today? You're going to wait around, or you're going to get up and try? I want you to remember one of the oldest truths: nothing changes if nothing changes. I am telling you, every single morning you have a choice. Trying to be better is hard, and a lot of people give up. But I am not going to quit, and you are not either. We are going to control what we can control. Definitely. Take it easy on the doubt, and get to work, because I am telling you, and you've got this." },
+  { title: "Coffee Shop Run-In", text:
+"What's up! How's it going? Hows it going, really? How is it going, and how is everything? Whats up with you? How have you been? I have not seen you in a couple of months. Do you want to grab a cup of coffee? They have a variety of stuff here, and the chocolate one is my favorite. I am going to get a sandwich too. Did you eat yet? Come on, let me buy. So what about you, what is going on, and what is happening with the new job? That is awesome. Okay, I'm out of here in a minute, but it was good to see you. Catch you later, and take it easy!" },
+  { title: "The Old Neighborhood", text:
+"I still remember my grandma's little house in the city. Every February, the whole family would get together, and grandpa would tell the same stories he had told for thirty years. The water heater never worked, the butter was always soft, and somebody had eaten all the chocolate before noon. Those were comfortable, beautiful days, and I have not forgotten a single one. I'd give anything to go back. Funny how memory works: you forget the big stuff and remember the little things forever." },
+  { title: "The Startup Pitch", text:
+"Let me introduce our company, and the interview will explain the rest. The internet changed every industry, but most industries still run on terrible data, no matter the quantity. Our computer platform is automatic: you address a problem once, and it is solved everywhere. We are a united, international team of twenty, and we have plenty of advantages. Honestly, it is not dramatic to say this is important. The government, the corporate world, the federal agencies, even the average user, everybody needs this. You are probably going to want to be a part of it." },
+  { title: "Road Trip", text:
+"Okay, you all ready? Hold on, what is the address again? The driver needs to know where we are going, and when. We have to get over the mountain before evening, so let us get moving. I am pretty sure there is a different restaurant around the center of town. Are you certain? Pretty certain. Trying to find parking is going to be the hard part. Anyway, it is a beautiful drive, and we have a couple of hours. Let it go and enjoy the ride." },
+  { title: "The Dentist", text:
+"I had a dentist appointment on Wednesday, and then the hospital called about my temperature. Honestly, I am a desperate, disappointing patient, and I had not flossed in months. The dentist asked if I had been brushing. I lied. He recognized it immediately. Anyway, you have to take it seriously; your teeth matter. Forty percent of people don't even go once a year. Don't be them. Make the appointment, and actually keep it." },
+  { title: "Halftime Speech", text:
+"Listen up! We are down by eight, and I do not care. Twenty minutes left. You have to want it. Control the ball, control the pace, control the game. I have seen you all do this in practice a thousand times. This is the moment we trained for. Are you going to fold, or are you going to fight? I should have known you had it in you, 'cause I have watched you grow. Now get out there. Let us go!" },
+  { title: "What I Told You", text:
+"Did you talk to him? Does he know? Has he called you? Did he answer? I told you what would happen. Would he lie to your face? Could he really do that? Should he get a second chance? Maybe, but I doubt it. What I told you last week is still true. Let him try to explain. If he did not even apologize, then you found them out for who they are. Flip them off and invite her over instead. I'm just saying: trust what you saw, that I am sure of." },
+  { title: "Late Night Thoughts", text:
+"Late at night, the mind wanders to infinity. Is it fate, or is it just chance? I keep falling into the same hole, chasing the same dream. I have written it down a hundred times, as something to hold. Maybe I am exactly where I am supposed to be. But I am not certain, and that is okay. What I am, after everything, is still trying. And you've taught me that trying is enough. Hold on to that, and let it carry you from here." },
+  { title: "Party Planning", text:
+"The party is on Wednesday. We need plenty of food: a couple of sandwiches, some of my favorites, a tray of vegetables and one vegetable, the chocolate cake, and four bottles of water. About twenty people said yes, maybe thirty. Can you bring the camera? I want a photo of everyone, and their friends; they are coming, so they're in the shot too. Did you get the address? It's in the middle of the city, but its parking is awful. Okay, I think that is everything. This is going to be awesome." },
+  { title: "Customer Service", text:
+"I am sorry, but I cannot do that. We do not have your order, and it is not in the system. You are going to have to wait. I would help if I could, but my hands are tied. There is nothing I can do right now. I have not seen this error before. It was not your fault, and it is not mine. Let us try again tomorrow. Thank you for your patience. Goodbye." },
+  { title: "Who Am I", text:
+"Who am I? That is the question. I am not perfect, and I have made mistakes. But I am accountable for every one of them. What I am is a work in progress. The variety of choices I have made, good and bad, made me. And you've seen me grow. I recognize that now. Honestly, I am proud of the person I am becoming." },
+  { title: "Texting a Friend", text:
+"I don't know, what do you think? What did you decide? You shouldn't have waited. I couldn't, and I wouldn't either. Didn't you say you would? I haven't, she hasn't, and they hadn't. It isn't, it wasn't, and they weren't ever going to. Would you, could you, should you even ask? Give me a break. Tell him, give him, get him on the phone. I bet you he doesn't know. Got you. Got it. Get it? I'm about to leave. Don't you go yet. How about you? I'll get you a coffee, I got a minute. She is waiting. Used to, has to, ought to. In front of the store, because of the rain. Sort of. Shut up! Here is the plan, and who is in? I will, we will, you will, they will, all of us, on a Saturday. Ain't that something? Ok, cause I got to run, and I can't even be late." },
+  { title: "Showcase (kitchen sink)", text:
+"For instance, and for example, take a fellow who literally, basically, usually wants more. He could have, should have, would have, but he should not have, could not have, would not have. He does not even try, and he can't even, and she won't even. Several federal sentences were written about the average beverage industry, a general and generally separate matter of total quantity. The captain touched the metal, the settle, the bottle, and the battle plans. It is cool, it is good, it is easy, it is no good. Whatever. He is handsome, his clothes are different, and the difference is the actual, interesting kind of detail. Ninety, eighty, seventy. The library and the factory had a history of victory. I'd recognize grandma anywhere this evening, and I have been wanting and wanted this. I should've, would've, could've. They were not, it will not, I can not, he has not. Easily done. Need you, see you, like a friend, doing fine." }
+];
+
+const HINTS = {
+  subtle: "Subtle — phrases, connected speech, ~250 common words & flat-T. Clean and safe for any text.",
+  full: "Full — adds heavy reductions (it→ih, the→thuh, you→ya), slang, H-dropping, -ing→-in and T→CH/D→J on unlisted words. Thickest accent."
+};
+
+/* ----------------------------- engine ------------------------------------- */
+function esc(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+
+function applyDict(text, dict){
+  const keys = Object.keys(dict).sort((a,b)=> b.length - a.length);
+  for(const k of keys){
+    const re = new RegExp("(?<![a-z'])" + esc(k) + "(?![a-z'])", "gi");
+    text = text.replace(re, dict[k]);
+  }
+  return text;
+}
+
+function applyRules(text, full){
+  if(full){
+    // T-clusters that are really an SH / CH sound — spell them that way instead of
+    // mis-flapping them. Turns former misfires (nation->nadion) into correct accent.
+    text = text.replace(/stion/gi, "schun");          // question  -> queschun
+    text = text.replace(/tion/gi,  "shun");           // nation    -> nashun, additional -> addishunal
+    text = text.replace(/tious/gi, "shus");           // ambitious -> ambishus
+    text = text.replace(/tial/gi,  "shul");           // partial   -> parshul
+    text = text.replace(/ture/gi,  "cher");           // picture   -> piccher, nature -> nacher
+    text = text.replace(/([a-z])tur/gi, "$1chur");    // natural   -> nachural (not word-initial: 'turn' stays)
+    text = text.replace(/tual/gi,  "chual");          // actual    -> akchual
+  }
+  // -ttle / -tle endings (syllabic L): cattle -> caddle, title -> tidle
+  text = text.replace(/([aeiou])ttle\b/gi, "$1ddle");
+  text = text.replace(/([aeiou])tle\b/gi,  "$1dle");
+  // Flat T between vowels -> d (double stays double), skipping sh/ch t's (-ti+vowel, -tu).
+  text = text.replace(/([aeiou])tt(?!i[aeiouy]|u)([aeiouy])/gi, "$1dd$2");  // better -> bedder
+  text = text.replace(/([aeiou])t(?!i[aeiouy]|u)([aeiouy])/gi,  "$1d$2");   // water  -> wader (skips nation/future)
+  if(full){
+    text = text.replace(/([a-z]*[aeiou][a-z]*?)ing\b/gi, "$1in");       // talking -> talkin (skips ring/king/thing)
+    text = text.replace(/([aeiou])rt(?!ure|ion)([aeioy])/gi, "$1rd$2");  // party   -> pardy (not fortune)
+    text = text.replace(/([aeiou])nt(?=er|y\b|o\b|ing\b)/gi, "$1n");     // winter  -> winer (NOT until/intend)
+    text = text.replace(/tr/gi, "chr");                                  // tree    -> chree
+    text = text.replace(/dr/gi, "jr");                                   // dream   -> jream, children -> chiljren
+  }
+  return text;
+}
+
+function decorate(text, opts){
+  text = opts.stops ? text.replace(/’/g, '<span class="stop">ʼ</span>') : text.replace(/’/g, "");
+  if(opts.weak){
+    text = text.replace(/\b([a-z]*[aeiou][a-z]*?)([bptd])\b/gi, '$1<span class="wk">[$2]</span>');
+  }
+  return text;
+}
+
+function recap(text){
+  return text.replace(/(^|[.!?]\s+|\n+)([a-z])/g, (m,p,c)=> p + c.toUpperCase());
+}
+
+function convert(raw, opts){
+  if(!raw.trim()) return "";
+  const full = opts.level === "full";
+  let t = normApos(raw).toLowerCase();
+  // 1. Curated + connected speech (both intensities)
+  t = applyDict(t, PHRASES);
+  t = applyDict(t, BLENDS);
+  // 2. Curated single words win before generic expansion
+  t = applyDict(t, BASE_WORDS);
+  t = applyDict(t, COMMON_BASE);
+  // 3. Full-only heavy reductions. SLANG before COMMON_FULL so multi-word slang
+  //    ("you all"->"yall") isn't pre-empted by single-word reductions ("you"->"ya").
+  if(full){
+    t = applyDict(t, FULL_WORDS);
+    t = applyDict(t, SLANG);
+    t = applyDict(t, COMMON_FULL);
+  }
+  // 4. Post-pass: conversions that must not be re-reduced (e.g. four -> for)
+  t = applyDict(t, POST_WORDS);
+  // 5. Generative phonetic rules for everything still unlisted
+  t = applyRules(t, full);
+  t = decorate(t, opts);
+  return recap(t);
+}
+
+/* ----------------------------- UI ----------------------------------------- */
+const input = document.getElementById("input");
+const output = document.getElementById("output");
+const count = document.getElementById("count");
+const weak = document.getElementById("weak");
+const stops = document.getElementById("stops");
+const hint = document.getElementById("hint");
+let level = "full";
+
+// Split input into sentence-sized segments so each original line can sit above
+// its converted version. Splits on newlines and . ! ? boundaries.
+function segment(text){
+  const out = [];
+  for(const line of text.split(/\r?\n/)){
+    const parts = line.match(/\s*[^.!?]+[.!?]*/g);
+    if(parts){ for(const p of parts){ if(p.trim()) out.push(p.trim()); } }
+  }
+  return out;
+}
+function escapeHtml(s){
+  return s.replace(/[&<>]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;" }[c]));
+}
+// All converted text, plain (for copy / speech): strips markup + decoration.
+function convertedPlain(){
+  return Array.from(output.querySelectorAll(".conv .txt"))
+    .map(e => e.textContent.replace(/ʼ/g, "").replace(/[\[\]]/g, ""))
+    .join("\n");
+}
+
+function render(){
+  const opts = { level, weak: weak.checked, stops: stops.checked };
+  count.textContent = input.value.length + " chars";
+  hint.textContent = HINTS[level];
+  const segs = segment(input.value);
+  if(!segs.length){
+    output.className = "out placeholder";
+    output.textContent = "…your American sound shows up here.";
+    return;
+  }
+  output.className = "out";
+  output.innerHTML = segs.map(s =>
+    `<div class="pair">` +
+      `<div class="orig"><span class="tag en">EN</span><span class="txt">${escapeHtml(s)}</span></div>` +
+      `<div class="conv"><span class="tag us">US</span><span class="txt">${convert(s, opts)}</span></div>` +
+    `</div>`
+  ).join("");
+}
+
+input.addEventListener("input", render);
+weak.addEventListener("change", render);
+stops.addEventListener("change", render);
+
+document.querySelectorAll("#intensity button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    document.querySelectorAll("#intensity button").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    level = b.dataset.level;
+    render();
+  });
+});
+
+const exWrap = document.getElementById("examples");
+SAMPLES.forEach(s=>{
+  const c = document.createElement("button");
+  c.className = "chip"; c.textContent = s.title; c.title = "Load: " + s.title;
+  c.addEventListener("click", ()=>{
+    input.value = s.text;
+    render();
+    output.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+  exWrap.appendChild(c);
+});
+
+const toast = document.getElementById("toast");
+let toastT;
+function showToast(msg){
+  toast.textContent = msg; toast.classList.add("show");
+  clearTimeout(toastT); toastT = setTimeout(()=>toast.classList.remove("show"), 1400);
+}
+
+document.getElementById("copy").addEventListener("click", async ()=>{
+  const text = convertedPlain();
+  if(!text.trim()){ showToast("Nothing to copy"); return; }
+  try { await navigator.clipboard.writeText(text); showToast("Copied!"); }
+  catch { showToast("Copy failed"); }
+});
+document.getElementById("clear").addEventListener("click", ()=>{ input.value=""; render(); input.focus(); });
+
+/* ----------------------------- speech ------------------------------------- */
+const voiceSel = document.getElementById("voice");
+const rate = document.getElementById("rate");
+let voices = [];
+
+function loadVoices(){
+  voices = (window.speechSynthesis ? speechSynthesis.getVoices() : []) || [];
+  const us  = voices.filter(v => /en[-_]US/i.test(v.lang));
+  const en  = voices.filter(v => /^en/i.test(v.lang) && !/en[-_]US/i.test(v.lang));
+  const rest= voices.filter(v => !/^en/i.test(v.lang));
+  const ordered = [...us, ...en, ...rest];
+
+  voiceSel.innerHTML = "";
+  if(!ordered.length){
+    const o = document.createElement("option"); o.textContent = "No voices available"; voiceSel.appendChild(o); return;
+  }
+  ordered.forEach(v=>{
+    const o = document.createElement("option");
+    o.value = voices.indexOf(v);
+    o.textContent = `${v.name} (${v.lang})${/en[-_]US/i.test(v.lang) ? "  ★ US" : ""}`;
+    voiceSel.appendChild(o);
+  });
+
+  // Default to Google US English when available (Chrome/Edge), else best US voice.
+  const preferred =
+    us.find(v => /google us english/i.test(v.name)) ||
+    us.find(v => /google/i.test(v.name)) ||
+    us.find(v => /natural|aria|jenny/i.test(v.name)) ||
+    us[0];
+  if(preferred) voiceSel.value = voices.indexOf(preferred);
+}
+if(window.speechSynthesis){
+  loadVoices();
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+document.getElementById("speak").addEventListener("click", ()=>{
+  if(!window.speechSynthesis){ showToast("Speech not supported"); return; }
+  const text = convertedPlain().replace(/\n/g, ". ");
+  if(!text.trim()){ showToast("Nothing to say"); return; }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const vi = parseInt(voiceSel.value, 10);
+  if(!isNaN(vi) && voices[vi]){ u.voice = voices[vi]; u.lang = voices[vi].lang; }
+  else u.lang = "en-US";
+  u.rate = parseFloat(rate.value);
+  speechSynthesis.speak(u);
+});
+document.getElementById("stopSpeak").addEventListener("click", ()=>{ if(window.speechSynthesis) speechSynthesis.cancel(); });
+
+render();
+</script>
+</body>
+</html>

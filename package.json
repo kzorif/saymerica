@@ -1,0 +1,9 @@
+{
+  "name": "saymerica",
+  "version": "1.0.0",
+  "description": "Convert any English text to relaxed American-accent spelling. Single-file, offline, no login.",
+  "private": true,
+  "scripts": {
+    "test": "node tests/engine.test.mjs"
+  }
+}
